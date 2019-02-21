@@ -24,7 +24,7 @@ func (cff *ConfigFile)SetDefault(){
 	DAG2yaml.CheckErr(err)
 	_, err = cff.Cfg.Section("base").NewKey("defaultFinishMark","Still_waters_run_deep")
 	DAG2yaml.CheckErr(err)
-	cff.Cfg.Update()
+	cff.Update()
 }
 
 
