@@ -1,7 +1,7 @@
 package Taskconf
 
 import (
-//	"fmt"
+	//	"fmt"
 	"github.com/ahworld07/DAG2yaml"
 	"github.com/go-ini/ini"
 	"os"
@@ -20,11 +20,14 @@ func (cff *ConfigFile)SetDefault(){
 
 	_ ,_ = cff.Cfg.NewSection("project")
 	_ ,_ = cff.Cfg.NewSection("base")
+	_ ,_ = cff.Cfg.NewSection("kubectl")
 	_, err = cff.Cfg.Section("base").NewKey("CronNode",Hname)
 	DAG2yaml.CheckErr(err)
 	_, err = cff.Cfg.Section("base").NewKey("defaultFinishMark","Still_waters_run_deep")
 	DAG2yaml.CheckErr(err)
 	_, err = cff.Cfg.Section("base").NewKey("pobMaxRetries","3")
+	DAG2yaml.CheckErr(err)
+	_, err = cff.Cfg.Section("kubectl").NewKey("RunAsGroup","511")
 	DAG2yaml.CheckErr(err)
 	cff.Update()
 }
@@ -43,6 +46,13 @@ func Config_Init()(cff *ConfigFile){
 	}
 	cfg, err := ini.LoadSources(ini.LoadOptions{AllowBooleanKeys: true}, Conf_file)
 	DAG2yaml.CheckErr(err)
+
+	pobMaxRetries := cfg.Section("base").Key("pobMaxRetries").String()
+	RunAsGroup := cfg.Section("kubectl").Key("RunAsGroup").String()
+
+	if pobMaxRetries == "" || RunAsGroup == ""{
+		needupdate = true
+	}
 
 	cff = &ConfigFile{Conffile:Conf_file, Cfg:cfg}
 	if needupdate{
@@ -84,4 +94,3 @@ func (cff *ConfigFile)RemovePrj(prjname string){
 	}
 	cff.Cfg.Section("project").DeleteKey(prjname)
 }
-
