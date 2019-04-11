@@ -29,6 +29,8 @@ func (cff *ConfigFile)SetDefault(){
 	DAG2yaml.CheckErr(err)
 	_, err = cff.Cfg.Section("kubectl").NewKey("RunAsGroup","511")
 	DAG2yaml.CheckErr(err)
+	_, err = cff.Cfg.Section("kubectl").NewKey("imagePullPolicy","Always")
+	DAG2yaml.CheckErr(err)
 	cff.Update()
 }
 
@@ -49,8 +51,9 @@ func Config_Init()(cff *ConfigFile){
 
 	pobMaxRetries := cfg.Section("base").Key("pobMaxRetries").String()
 	RunAsGroup := cfg.Section("kubectl").Key("RunAsGroup").String()
+	imagePullPolicy := cfg.Section("kubectl").Key("imagePullPolicy").String()
 
-	if pobMaxRetries == "" || RunAsGroup == ""{
+	if pobMaxRetries == "" || RunAsGroup == "" || imagePullPolicy == ""{
 		needupdate = true
 	}
 
