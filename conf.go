@@ -3,16 +3,15 @@ package Taskconf
 import (
 	"bytes"
 	"errors"
+	"fmt"
+	"github.com/go-ini/ini"
 	"log"
+	"os"
 	"os/exec"
 	"os/user"
+	"path"
 	"runtime"
 	"strings"
-
-	//"github.com/ahworld07/DAG2yaml"
-	"github.com/go-ini/ini"
-	"os"
-	"path"
 )
 
 //This struct is used to read/write the config file, including default parameters and project database information.
@@ -105,11 +104,6 @@ func (cff *ConfigFile)RemovePrj(prjname string){
 	cff.Cfg.Section("project").DeleteKey(prjname)
 }
 
-
-
-
-
-
 func Home() (string, error) {
 	user, err := user.Current()
 	if nil == err {
@@ -177,4 +171,111 @@ func PathExists(path string) (bool, error) {
 		return false, nil
 	}
 	return false, err
+}
+
+func (CronL *CronList)AddCronfile(addstr string){
+	home, _ := Home()
+	cronfile := path.Join(home, "gomonitor.addCrontab")
+	for {
+		exit_file, err := PathExists(cronfile)
+		CheckErr(err)
+		if exit_file == false{
+			break
+		}else{
+			cronfile = cronfile + "1"
+		}
+	}
+
+	f, err := os.Create(cronfile)
+	fmt.Println(err)
+	defer f.Close()
+	f.WriteString(addstr)
+
+	cmd1 := exec.Command("sh","-c", fmt.Sprintf("crontab %s", cronfile))
+	_ = cmd1.Run()
+	cmd2 := exec.Command("sh","-c", fmt.Sprintf("rm %s", cronfile))
+	_ = cmd2.Run()
+}
+
+type CronList struct {
+	Program    string
+}
+
+func (CronL *CronList)AddCron(cff *ConfigFile){
+	oldnode := cff.Cfg.Section("base").Key("CronNode").String()
+	curnode, _:= os.Hostname()
+
+	if oldnode != curnode{
+		fmt.Println(fmt.Sprintf("Warning: You have monitor jobs on node %s\nIf you want to work on current node,\nplease use %s cron -m 5 to change.", oldnode, CronL.Program))
+		return
+	}
+
+	needAddCron := 0
+	var outbuf, errbuf bytes.Buffer
+	cmd := exec.Command("sh","-c","crontab -l")
+	cmd.Stdout = &outbuf
+	cmd.Stderr = &errbuf
+	_ = cmd.Run()
+	stdout := outbuf.String()
+	tmp := strings.Split(stdout,"\n")
+
+	if strings.Index("gomonitor", stdout) == 0{
+		needAddCron = 1
+	}
+
+	if needAddCron == 1{
+		addstr := fmt.Sprintf("5-59/10 * * * * %s cron -m 1\n0 0 1 * * %s cron -m 2", CronL.Program, CronL.Program)
+		if len(tmp) != 0{
+			addstr = addstr + "\n" + stdout
+		}
+		CronL.AddCronfile(addstr)
+	}
+}
+
+func (CronL *CronList)RemoveCron(cff *ConfigFile){
+	oldnode := cff.Cfg.Section("base").Key("CronNode").String()
+	curnode, _:= os.Hostname()
+
+	if oldnode != curnode{
+		fmt.Println(fmt.Sprintf("Warning: You have monitor jobs on node %s\nIf you want to work on current node,\nplease use %s cron -m 5 to change.", oldnode, CronL.Program))
+		return
+	}
+
+	var outbuf, errbuf bytes.Buffer
+	cmd := exec.Command("sh","-c","crontab -l")
+	cmd.Stdout = &outbuf
+	cmd.Stderr = &errbuf
+	_ = cmd.Run()
+	stdout := outbuf.String()
+	tmp := strings.Split(stdout,"\n")
+
+	addstr := ""
+	for _, line := range tmp{
+		if strings.Index("gomonitor", line) == 0{
+			addstr = addstr + "\n" + line
+		}
+	}
+	if addstr != ""{
+		CronL.AddCronfile(addstr)
+	}
+}
+
+
+func (CronL *CronList)CheckCron(cff *ConfigFile)(node bool){
+	node = true
+	oldnode := cff.Cfg.Section("base").Key("CronNode").String()
+	curnode, _:= os.Hostname()
+
+	if oldnode != curnode{
+		node = false
+	}
+	return
+}
+
+func (CronL *CronList)ChangeCron(cff *ConfigFile){
+	curnode, _:= os.Hostname()
+	_, err := cff.Cfg.Section("base").NewKey("CronNode", curnode)
+	CheckErr(err)
+	cff.Update()
+	return
 }
