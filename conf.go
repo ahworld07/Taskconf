@@ -267,6 +267,7 @@ func (CronL *CronList)CheckCron(cff *ConfigFile)(node bool){
 	curnode, _:= os.Hostname()
 
 	if oldnode != curnode{
+		fmt.Println(fmt.Sprintf("Warning: You have monitor jobs on node %s\nIf you want to work on current node,\nplease use %s cron -m 5 to change.", oldnode, CronL.Program))
 		node = false
 	}
 	return
