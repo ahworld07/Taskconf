@@ -27,6 +27,8 @@ func (cff *ConfigFile)SetDefault(){
 	_ ,_ = cff.Cfg.NewSection("project")
 	_ ,_ = cff.Cfg.NewSection("base")
 	_ ,_ = cff.Cfg.NewSection("kubectl")
+	_ ,_ = cff.Cfg.NewSection("volumeMounts")
+
 	_, err = cff.Cfg.Section("base").NewKey("CronNode",Hname)
 	CheckErr(err)
 	_, err = cff.Cfg.Section("base").NewKey("defaultFinishMark","Still_waters_run_deep")
@@ -37,6 +39,20 @@ func (cff *ConfigFile)SetDefault(){
 	CheckErr(err)
 	_, err = cff.Cfg.Section("kubectl").NewKey("imagePullPolicy","Always")
 	CheckErr(err)
+
+	_, err = cff.Cfg.Section("kubectl").NewKey("imageRegistry","registry-vpc.cn-hangzhou.aliyuncs.com/annoroad/")
+	CheckErr(err)
+	_, err = cff.Cfg.Section("kubectl").NewKey("image","annogene-base:v0.1")
+	CheckErr(err)
+	_, err = cff.Cfg.Section("kubectl").NewKey("NodeSelector","env:idc_physical")
+	CheckErr(err)
+	_, err = cff.Cfg.Section("kubectl").NewKey("imagePullSecrets","registry-read-only-key-yw")
+	CheckErr(err)
+	_, err = cff.Cfg.Section("volumeMounts").NewKey("home","/cluster_home|store|/home")
+	CheckErr(err)
+	_, err = cff.Cfg.Section("volumeMounts").NewKey("cloud","/cloud|store|/annogene/cloud")
+	CheckErr(err)
+
 	cff.Update()
 }
 
@@ -58,8 +74,12 @@ func Config_Init()(cff *ConfigFile){
 	pobMaxRetries := cfg.Section("base").Key("pobMaxRetries").String()
 	RunAsGroup := cfg.Section("kubectl").Key("RunAsGroup").String()
 	imagePullPolicy := cfg.Section("kubectl").Key("imagePullPolicy").String()
+	imageRegistry := cfg.Section("kubectl").Key("imageRegistry").String()
+	image := cfg.Section("kubectl").Key("image").String()
+	NodeSelector := cfg.Section("kubectl").Key("NodeSelector").String()
+	imagePullSecrets := cfg.Section("kubectl").Key("imagePullSecrets").String()
 
-	if pobMaxRetries == "" || RunAsGroup == "" || imagePullPolicy == ""{
+	if pobMaxRetries == "" || RunAsGroup == "" || imagePullPolicy == "" || imageRegistry == "" || image == "" || NodeSelector == "" || imagePullSecrets == ""{
 		needupdate = true
 	}
 
@@ -280,3 +300,4 @@ func (CronL *CronList)ChangeCron(cff *ConfigFile){
 	cff.Update()
 	return
 }
+
