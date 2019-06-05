@@ -2,8 +2,10 @@ package Taskconf
 
 import (
 	"bytes"
+	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/ahworld07/Taskconf"
 	"github.com/go-ini/ini"
 	"log"
 	"os"
@@ -125,9 +127,18 @@ func Programe_conf(bin string)(cfg *ini.File){
 }
 */
 
-func (cff *ConfigFile)AddPrj(prjname, prjdb string){
+func (cff *ConfigFile)AddPrj(prjName, ProjectType, ProjectBatch, workFlowMode, prjdb string, Db *sql.DB){
+	/*gomonitor_v0.11
 	_, err := cff.Cfg.Section("project").NewKey(prjname, prjdb)
 	CheckErr(err)
+	*/
+	stmt, err := Db.Prepare("INSERT INTO projects(ProjectName, ProjectType, ProjectBatch, workFlowMode, DbPath) values(?,?,?,?,?)")
+	CheckErr(err)
+	rows, err := Db.Query("select ProjectName from projects where ProjectName = ?", prjName)
+	if CheckCount(rows)==0 {
+		_, err = stmt.Exec(prjName, ProjectType, ProjectBatch, workFlowMode, prjdb)
+		CheckErr(err)
+	}
 }
 
 func (cff *ConfigFile)Update(){
@@ -323,47 +334,77 @@ func (CronL *CronList)ChangeCron(cff *ConfigFile){
 	return
 }
 
-/*
-func Creat_tb(cff *Taskconf.ConfigFile, ProjectObj *Project)(dbObj *MySql){
-	home, _ := Home()
-	Conf_file := path.Join(home, ".gomonitor.project.db")
-	exit_file, err := PathExists(Conf_file)
+func Crt_gm_project_tb(Db *sql.DB){
+	sql_projects_table := `
+	CREATE TABLE IF NOT EXISTS projects(
+		Id INTEGER NOT NULL PRIMARY KEY,
+		ProjectName TEXT,
+		ProjectType	TEXT,
+		ProjectBatch	TEXT,
+		workFlowMode	TEXT,
+		DbPath	TEXT,
+		Status	TEXT,
+		Start_time	datetime,
+		End_time	datetime
+	);
+	`
+	_, err := Db.Exec(sql_projects_table)
+	if err != nil { panic(err) }
+}
 
-	exit_file, _ := DAG2yaml.PathExists(dbpath)
-	if exit_file == false {
-		//_ = os.Remove(dbpath)
-		os.Create(dbpath)
+func CheckCount(rows *sql.Rows) (count int) {
+	count = 0
+	for rows.Next() {
+		count ++
 	}
+	if err := rows.Err(); err != nil {
+		panic(err)
+	}
+	return count
+}
 
+func Cff_Projects2DB(cff *Taskconf.ConfigFile, Db *sql.DB){
+	stmt, err := Db.Prepare("INSERT INTO projects(ProjectName, ProjectType, ProjectBatch, workFlowMode, DbPath) values(?,?,?,?,?)")
+	CheckErr(err)
+
+	ProjectType := "Unknown"
+	user, _ := user.Current()
+	if user.Name == "filter"{
+		ProjectType = "filter"
+	}
+	ProjectBatch := "1"
+
+	for prjName, dbpath := range cff.Cfg.Section("project").KeysHash() {
+		rows, err := Db.Query("select ProjectName from projects where ProjectName = ?", prjName)
+		if CheckCount(rows)==0 {
+			if ProjectType == "filter"{
+				ProjectBatch = strings.Split(prjName, "_")[1]
+			}
+			_, err = stmt.Exec(prjName, ProjectType, ProjectBatch, "taskmonitor", dbpath)
+			CheckErr(err)
+		}
+	}
+}
+
+
+
+func Creat_project_DB(cff *Taskconf.ConfigFile)(conn *sql.DB){
+	home, _ := Home()
+	GM_dbfile := path.Join(home, ".gomonitor.project.db")
+	exit_file, err := PathExists(GM_dbfile)
+
+	if exit_file == false {
+		os.Create(GM_dbfile)
+	}
 	//db init
 	//create table
-	conn, err := sql.Open("sqlite3", dbpath)
-	DAG2yaml.CheckErr(err)
-	dbObj = &MySql{Db: conn}
-	dbObj.Crt_tb()
+	conn, err = sql.Open("sqlite3", GM_dbfile)
+	CheckErr(err)
 
-	stmt, err := dbObj.Db.Prepare("INSERT INTO project(ProjectName, ProjectType, FinishMark, FinishStr, DefaultEnv, LastModule, Mainfinished, SubmitEnabled, Start_time, Status, MaxRetriedTimes) values(?,?,?,?,?,?,?,?,?,?,?)")
-	DAG2yaml.CheckErr(err)
+	Crt_gm_project_tb(conn)
 
-	rows, err := dbObj.Db.Query("select ProjectName from project where ProjectName = ?", ProjectObj.ProjectName)
-	defer rows.Close()
-	DAG2yaml.CheckErr(err)
-
-	now := time.Now().Format("2006-01-02 15:04:05")
-	if CheckCount(rows)==0 {
-		_, err = stmt.Exec(ProjectObj.ProjectName, ProjectObj.ProjectType, ProjectObj.FinishMark, ProjectObj.FinishStr, ProjectObj.DefaultEnv, ProjectObj.LastModule, ProjectObj.Mainfinished, 1, now, P_unsubmit, ProjectObj.MaxRetriedTimes)
-		DAG2yaml.CheckErr(err)
-	}
-
-	update_stmt, err := dbObj.Db.Prepare("update project set Total=?, Unsubmit=?, Pending=?, Running=?, Failed=?, Succeeded=? where ProjectName=?")
-	DAG2yaml.CheckErr(err)
-	_, err = update_stmt.Exec(0,0,0,0,0,0,ProjectObj.ProjectName)
-	DAG2yaml.CheckErr(err)
-
-	cff = Taskconf.Config_Init()
-	cff.AddPrj(ProjectObj.ProjectName, dbpath)
-	cff.Update()
+	//后期删除此项,所有project均在
+	Cff_Projects2DB(cff, conn)
 
 	return
 }
-*/
