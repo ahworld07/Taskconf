@@ -35,19 +35,41 @@ func (cff *ConfigFile)SetDefault(){
 	CheckErr(err)
 	_, err = cff.Cfg.Section("base").NewKey("pobMaxRetries","3")
 	CheckErr(err)
-	_, err = cff.Cfg.Section("kubectl").NewKey("RunAsGroup","511")
-	CheckErr(err)
-	_, err = cff.Cfg.Section("kubectl").NewKey("imagePullPolicy","Always")
-	CheckErr(err)
+
+	RunAsGroup := cff.Cfg.Section("kubectl").Key("RunAsGroup").String()
+	if RunAsGroup == ""{
+		gid := "511"
+		user, _ := user.Current()
+		if user.Name == "sci-qc"{
+			gid = "674"
+		}
+		_, err = cff.Cfg.Section("kubectl").NewKey("RunAsGroup",gid)
+		CheckErr(err)
+	}
+
+	imagePullPolicy := cff.Cfg.Section("kubectl").Key("imagePullPolicy").String()
+	if imagePullPolicy == ""{
+		_, err = cff.Cfg.Section("kubectl").NewKey("imagePullPolicy","Always")
+		CheckErr(err)
+	}
 
 	_, err = cff.Cfg.Section("kubectl").NewKey("imageRegistry","registry-vpc.cn-hangzhou.aliyuncs.com/annoroad/")
 	CheckErr(err)
 	_, err = cff.Cfg.Section("kubectl").NewKey("image","annogene-base:v0.1")
 	CheckErr(err)
-	_, err = cff.Cfg.Section("kubectl").NewKey("NodeSelector","env:idc_physical")
-	CheckErr(err)
-	_, err = cff.Cfg.Section("kubectl").NewKey("imagePullSecrets","registry-read-only-key-yw")
-	CheckErr(err)
+
+	NodeSelector := cff.Cfg.Section("kubectl").Key("imagePullPolicy").String()
+	if NodeSelector == ""{
+		_, err = cff.Cfg.Section("kubectl").NewKey("NodeSelector","env:idc_physical")
+		CheckErr(err)
+	}
+
+	imagePullSecrets := cff.Cfg.Section("kubectl").Key("imagePullSecrets").String()
+	if imagePullSecrets == ""{
+		_, err = cff.Cfg.Section("kubectl").NewKey("imagePullSecrets","registry-read-only-key-yw")
+		CheckErr(err)
+	}
+
 	_, err = cff.Cfg.Section("volumeMounts").NewKey("home","/cluster_home|store|/home")
 	CheckErr(err)
 	_, err = cff.Cfg.Section("volumeMounts").NewKey("cloud","/cloud|store|/annogene/cloud")
@@ -301,3 +323,47 @@ func (CronL *CronList)ChangeCron(cff *ConfigFile){
 	return
 }
 
+/*
+func Creat_tb(cff *Taskconf.ConfigFile, ProjectObj *Project)(dbObj *MySql){
+	home, _ := Home()
+	Conf_file := path.Join(home, ".gomonitor.project.db")
+	exit_file, err := PathExists(Conf_file)
+
+	exit_file, _ := DAG2yaml.PathExists(dbpath)
+	if exit_file == false {
+		//_ = os.Remove(dbpath)
+		os.Create(dbpath)
+	}
+
+	//db init
+	//create table
+	conn, err := sql.Open("sqlite3", dbpath)
+	DAG2yaml.CheckErr(err)
+	dbObj = &MySql{Db: conn}
+	dbObj.Crt_tb()
+
+	stmt, err := dbObj.Db.Prepare("INSERT INTO project(ProjectName, ProjectType, FinishMark, FinishStr, DefaultEnv, LastModule, Mainfinished, SubmitEnabled, Start_time, Status, MaxRetriedTimes) values(?,?,?,?,?,?,?,?,?,?,?)")
+	DAG2yaml.CheckErr(err)
+
+	rows, err := dbObj.Db.Query("select ProjectName from project where ProjectName = ?", ProjectObj.ProjectName)
+	defer rows.Close()
+	DAG2yaml.CheckErr(err)
+
+	now := time.Now().Format("2006-01-02 15:04:05")
+	if CheckCount(rows)==0 {
+		_, err = stmt.Exec(ProjectObj.ProjectName, ProjectObj.ProjectType, ProjectObj.FinishMark, ProjectObj.FinishStr, ProjectObj.DefaultEnv, ProjectObj.LastModule, ProjectObj.Mainfinished, 1, now, P_unsubmit, ProjectObj.MaxRetriedTimes)
+		DAG2yaml.CheckErr(err)
+	}
+
+	update_stmt, err := dbObj.Db.Prepare("update project set Total=?, Unsubmit=?, Pending=?, Running=?, Failed=?, Succeeded=? where ProjectName=?")
+	DAG2yaml.CheckErr(err)
+	_, err = update_stmt.Exec(0,0,0,0,0,0,ProjectObj.ProjectName)
+	DAG2yaml.CheckErr(err)
+
+	cff = Taskconf.Config_Init()
+	cff.AddPrj(ProjectObj.ProjectName, dbpath)
+	cff.Update()
+
+	return
+}
+*/
