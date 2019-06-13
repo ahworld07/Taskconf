@@ -131,11 +131,11 @@ func (cff *ConfigFile)AddPrj(prjName, ProjectType, ProjectBatch, WorkFlowMode, p
 	_, err := cff.Cfg.Section("project").NewKey(prjname, prjdb)
 	CheckErr(err)
 	*/
-	stmt, err := GM_projects_DBconn.Prepare("INSERT INTO projects(ProjectName, ProjectType, ProjectBatch, WorkFlowMode, DbPath, Status) values(?,?,?,?,?,?)")
+	stmt, err := GM_projects_DBconn.Prepare("INSERT INTO projects(ProjectName, ProjectType, ProjectBatch, WorkFlowMode, DbPath, Status, IsUpdateNow) values(?,?,?,?,?,?,?)")
 	CheckErr(err)
 	rows, err := GM_projects_DBconn.Query("select ProjectName from projects where ProjectName = ? and ProjectType = ? and ProjectBatch = ? and WorkFlowMode = ?", prjName, ProjectType, ProjectBatch, WorkFlowMode)
 	if CheckCount(rows)==0 {
-		_, err = stmt.Exec(prjName, ProjectType, ProjectBatch, WorkFlowMode, prjdb, "Unsubmit")
+		_, err = stmt.Exec(prjName, ProjectType, ProjectBatch, WorkFlowMode, prjdb, "Unsubmit", "no")
 		CheckErr(err)
 	}
 }
@@ -365,7 +365,7 @@ func CheckCount(rows *sql.Rows) (count int) {
 }
 
 func Cff_Projects2DB(cff *ConfigFile, Db *sql.DB){
-	stmt, err := Db.Prepare("INSERT INTO projects(ProjectName, ProjectType, ProjectBatch, WorkFlowMode, DbPath) values(?,?,?,?,?)")
+	stmt, err := Db.Prepare("INSERT INTO projects(ProjectName, ProjectType, ProjectBatch, WorkFlowMode, DbPath, IsUpdateNow) values(?,?,?,?,?,?)")
 	CheckErr(err)
 
 	ProjectType := "Unknown"
@@ -385,7 +385,7 @@ func Cff_Projects2DB(cff *ConfigFile, Db *sql.DB){
 			if ProjectType == "filter"{
 				ProjectBatch = strings.Split(prjName, "_")[1]
 			}
-			_, err = stmt.Exec(prjName, ProjectType, ProjectBatch, "taskmonitor", dbpath)
+			_, err = stmt.Exec(prjName, ProjectType, ProjectBatch, "taskmonitor", dbpath, "no")
 			CheckErr(err)
 		}
 

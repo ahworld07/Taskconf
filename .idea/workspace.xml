@@ -15,11 +15,11 @@
     <session id="-200679774">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="9" />
-          <entry key="project.open.time.0" value="7" />
+          <entry key="project.closed" value="10" />
+          <entry key="project.open.time.0" value="8" />
           <entry key="project.open.time.1" value="2" />
           <entry key="project.open.time.2" value="1" />
-          <entry key="project.opened" value="10" />
+          <entry key="project.opened" value="11" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -34,12 +34,12 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="go" value="1265" />
+          <entry key="go" value="1283" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Go" value="1240" />
+          <entry key="Go" value="1258" />
           <entry key="SQL" value="25" />
         </counts>
       </usages-collector>
@@ -50,8 +50,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/conf.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="307">
-              <caret line="350" column="5" lean-forward="true" selection-start-line="350" selection-start-column="5" selection-end-line="350" selection-end-column="5" />
+            <state relative-caret-position="277">
+              <caret line="139" column="5" lean-forward="true" selection-start-line="139" selection-start-column="5" selection-end-line="139" selection-end-column="5" />
             </state>
           </provider>
         </entry>
@@ -91,9 +91,9 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="371" />
+    <option name="x" value="154" />
     <option name="y" value="23" />
-    <option name="width" value="1069" />
+    <option name="width" value="1286" />
     <option name="height" value="799" />
   </component>
   <component name="ProjectView">
@@ -135,10 +135,10 @@
     </option>
   </component>
   <component name="ToolWindowManager">
-    <frame x="371" y="23" width="1069" height="799" extended-state="0" />
+    <frame x="154" y="23" width="1286" height="799" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.0691334" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.057877813" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -195,8 +195,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/conf.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="307">
-          <caret line="350" column="5" lean-forward="true" selection-start-line="350" selection-start-column="5" selection-end-line="350" selection-end-column="5" />
+        <state relative-caret-position="277">
+          <caret line="139" column="5" lean-forward="true" selection-start-line="139" selection-start-column="5" selection-end-line="139" selection-end-column="5" />
         </state>
       </provider>
     </entry>
