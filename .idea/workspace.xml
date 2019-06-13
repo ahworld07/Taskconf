@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4f7e329d-5bb1-4321-ae6f-f063717e035b" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/conf.go" beforeDir="false" afterPath="$PROJECT_DIR$/conf.go" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -14,11 +15,11 @@
     <session id="-200679774">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="8" />
-          <entry key="project.open.time.0" value="6" />
+          <entry key="project.closed" value="9" />
+          <entry key="project.open.time.0" value="7" />
           <entry key="project.open.time.1" value="2" />
           <entry key="project.open.time.2" value="1" />
-          <entry key="project.opened" value="9" />
+          <entry key="project.opened" value="10" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -33,12 +34,12 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="go" value="1254" />
+          <entry key="go" value="1265" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Go" value="1229" />
+          <entry key="Go" value="1240" />
           <entry key="SQL" value="25" />
         </counts>
       </usages-collector>
@@ -49,11 +50,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/conf.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="473">
-              <caret line="397" lean-forward="true" selection-start-line="397" selection-end-line="397" />
-              <folding>
-                <element signature="e#18#193#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="307">
+              <caret line="350" column="5" lean-forward="true" selection-start-line="350" selection-start-column="5" selection-end-line="350" selection-end-column="5" />
             </state>
           </provider>
         </entry>
@@ -72,6 +70,7 @@
       <find>.Update</find>
       <find>Cff_Projects2DB</find>
       <find>Taskconf</find>
+      <find>WorkFlowMode</find>
     </findStrings>
   </component>
   <component name="GOROOT" path="/usr/local/go" />
@@ -92,9 +91,9 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="219" />
+    <option name="x" value="371" />
     <option name="y" value="23" />
-    <option name="width" value="1221" />
+    <option name="width" value="1069" />
     <option name="height" value="799" />
   </component>
   <component name="ProjectView">
@@ -102,7 +101,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -114,6 +112,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -136,10 +135,10 @@
     </option>
   </component>
   <component name="ToolWindowManager">
-    <frame x="219" y="23" width="1221" height="799" extended-state="0" />
+    <frame x="371" y="23" width="1069" height="799" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.05937235" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.0691334" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -196,11 +195,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/conf.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="473">
-          <caret line="397" lean-forward="true" selection-start-line="397" selection-end-line="397" />
-          <folding>
-            <element signature="e#18#193#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="307">
+          <caret line="350" column="5" lean-forward="true" selection-start-line="350" selection-start-column="5" selection-end-line="350" selection-end-column="5" />
         </state>
       </provider>
     </entry>

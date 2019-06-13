@@ -126,16 +126,16 @@ func Programe_conf(bin string)(cfg *ini.File){
 }
 */
 
-func (cff *ConfigFile)AddPrj(prjName, ProjectType, ProjectBatch, workFlowMode, prjdb string, GM_projects_DBconn *sql.DB){
+func (cff *ConfigFile)AddPrj(prjName, ProjectType, ProjectBatch, WorkFlowMode, prjdb string, GM_projects_DBconn *sql.DB){
 	/*gomonitor_v0.11
 	_, err := cff.Cfg.Section("project").NewKey(prjname, prjdb)
 	CheckErr(err)
 	*/
-	stmt, err := GM_projects_DBconn.Prepare("INSERT INTO projects(ProjectName, ProjectType, ProjectBatch, workFlowMode, DbPath, Status) values(?,?,?,?,?,?)")
+	stmt, err := GM_projects_DBconn.Prepare("INSERT INTO projects(ProjectName, ProjectType, ProjectBatch, WorkFlowMode, DbPath, Status) values(?,?,?,?,?,?)")
 	CheckErr(err)
-	rows, err := GM_projects_DBconn.Query("select ProjectName from projects where ProjectName = ? and ProjectType = ? and ProjectBatch = ? and workFlowMode = ?", prjName, ProjectType, ProjectBatch, workFlowMode)
+	rows, err := GM_projects_DBconn.Query("select ProjectName from projects where ProjectName = ? and ProjectType = ? and ProjectBatch = ? and WorkFlowMode = ?", prjName, ProjectType, ProjectBatch, WorkFlowMode)
 	if CheckCount(rows)==0 {
-		_, err = stmt.Exec(prjName, ProjectType, ProjectBatch, workFlowMode, prjdb, "Unsubmit")
+		_, err = stmt.Exec(prjName, ProjectType, ProjectBatch, WorkFlowMode, prjdb, "Unsubmit")
 		CheckErr(err)
 	}
 }
@@ -341,7 +341,7 @@ func Crt_gm_project_tb(Db *sql.DB){
 		ProjectName TEXT,
 		ProjectType	TEXT,
 		ProjectBatch	TEXT,
-		workFlowMode	TEXT,
+		WorkFlowMode	TEXT,
 		DbPath	TEXT,
 		Status	TEXT,
 		IsUpdateNow	TEXT,
@@ -365,7 +365,7 @@ func CheckCount(rows *sql.Rows) (count int) {
 }
 
 func Cff_Projects2DB(cff *ConfigFile, Db *sql.DB){
-	stmt, err := Db.Prepare("INSERT INTO projects(ProjectName, ProjectType, ProjectBatch, workFlowMode, DbPath) values(?,?,?,?,?)")
+	stmt, err := Db.Prepare("INSERT INTO projects(ProjectName, ProjectType, ProjectBatch, WorkFlowMode, DbPath) values(?,?,?,?,?)")
 	CheckErr(err)
 
 	ProjectType := "Unknown"
@@ -377,7 +377,7 @@ func Cff_Projects2DB(cff *ConfigFile, Db *sql.DB){
 		ProjectType = "splite"
 	}
 
-	ProjectBatch := "1"
+	ProjectBatch := "None"
 
 	for prjName, dbpath := range cff.Cfg.Section("project").KeysHash() {
 		rows, err := Db.Query("select ProjectName from projects where ProjectName = ?", prjName)
