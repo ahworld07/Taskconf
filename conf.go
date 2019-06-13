@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/ahworld07/Taskconf"
 	"github.com/go-ini/ini"
 	"log"
 	"os"
@@ -365,7 +364,7 @@ func CheckCount(rows *sql.Rows) (count int) {
 	return count
 }
 
-func Cff_Projects2DB(cff *Taskconf.ConfigFile, Db *sql.DB){
+func Cff_Projects2DB(cff *ConfigFile, Db *sql.DB){
 	stmt, err := Db.Prepare("INSERT INTO projects(ProjectName, ProjectType, ProjectBatch, workFlowMode, DbPath) values(?,?,?,?,?)")
 	CheckErr(err)
 
@@ -394,7 +393,7 @@ func Cff_Projects2DB(cff *Taskconf.ConfigFile, Db *sql.DB){
 
 
 
-func Creat_project_DB(cff *Taskconf.ConfigFile)(conn *sql.DB){
+func Creat_project_DB(cff *ConfigFile)(conn *sql.DB){
 	home, _ := Home()
 	GM_dbfile := path.Join(home, ".gomonitor.project.db")
 	exit_file, err := PathExists(GM_dbfile)
