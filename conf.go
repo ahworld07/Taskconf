@@ -388,7 +388,10 @@ func Cff_Projects2DB(cff *ConfigFile, Db *sql.DB){
 			_, err = stmt.Exec(prjName, ProjectType, ProjectBatch, "taskmonitor", dbpath)
 			CheckErr(err)
 		}
+
+		cff.Cfg.Section("project").DeleteKey(prjName)
 	}
+	cff.Update()
 }
 
 
