@@ -127,19 +127,20 @@ func Programe_conf(bin string)(cfg *ini.File){
 }
 */
 
-func (cff *ConfigFile)AddPrj(prjName, ProjectType, ProjectBatch, workFlowMode, prjdb string, Db *sql.DB){
+func (cff *ConfigFile)AddPrj(prjName, ProjectType, ProjectBatch, workFlowMode, prjdb string, GM_projects_DBconn *sql.DB){
 	/*gomonitor_v0.11
 	_, err := cff.Cfg.Section("project").NewKey(prjname, prjdb)
 	CheckErr(err)
 	*/
-	stmt, err := Db.Prepare("INSERT INTO projects(ProjectName, ProjectType, ProjectBatch, workFlowMode, DbPath) values(?,?,?,?,?)")
+	stmt, err := GM_projects_DBconn.Prepare("INSERT INTO projects(ProjectName, ProjectType, ProjectBatch, workFlowMode, DbPath, Status) values(?,?,?,?,?,?)")
 	CheckErr(err)
-	rows, err := Db.Query("select ProjectName from projects where ProjectName = ?", prjName)
+	rows, err := GM_projects_DBconn.Query("select ProjectName from projects where ProjectName = ? and ProjectType = ? and ProjectBatch = ? and workFlowMode = ?", prjName, ProjectType, ProjectBatch, workFlowMode)
 	if CheckCount(rows)==0 {
-		_, err = stmt.Exec(prjName, ProjectType, ProjectBatch, workFlowMode, prjdb)
+		_, err = stmt.Exec(prjName, ProjectType, ProjectBatch, workFlowMode, prjdb, "Unsubmit")
 		CheckErr(err)
 	}
 }
+
 
 func (cff *ConfigFile)Update(){
 	err := cff.Cfg.SaveTo(cff.Conffile)
@@ -344,6 +345,7 @@ func Crt_gm_project_tb(Db *sql.DB){
 		workFlowMode	TEXT,
 		DbPath	TEXT,
 		Status	TEXT,
+		IsUpdateNow	TEXT,
 		Start_time	datetime,
 		End_time	datetime
 	);
@@ -372,6 +374,10 @@ func Cff_Projects2DB(cff *Taskconf.ConfigFile, Db *sql.DB){
 	if user.Name == "filter"{
 		ProjectType = "filter"
 	}
+	if user.Name == "sci-qc"{
+		ProjectType = "splite"
+	}
+
 	ProjectBatch := "1"
 
 	for prjName, dbpath := range cff.Cfg.Section("project").KeysHash() {
@@ -408,3 +414,5 @@ func Creat_project_DB(cff *Taskconf.ConfigFile)(conn *sql.DB){
 
 	return
 }
+
+
