@@ -5,20 +5,95 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/ahworld07/Taskutil"
 	"github.com/go-ini/ini"
 	"log"
 	"os"
 	"os/exec"
 	"os/user"
 	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 )
+
+var PodConfig string = `[templetes]
+pod_name = bcl2fq-all
+module = qc
+template = bcl2fq
+imagePullSecrets = registry-read-only-key-yw
+
+[Tolerations.network]
+Operator = Equal
+Value = internet
+Effect = NoSchedule
+
+[NodeSelector]
+env = idc_physical
+
+[requests]
+memory = 1
+cpu = 1
+
+[limits]
+memory = 1
+cpu = 1
+
+[container]
+image = registry-vpc.cn-hangzhou.aliyuncs.com/annoroad/annogene-base:v0.1
+args = /home/zanyuan/bin/example/submit_test/bcl2fq.sh
+lines = 
+[volumeMounts]
+home = /cluster_home|store|/home
+cloud = /cloud|store|/annogene/cloud
+datayw = /datayw|store|/annogene/datayw`
 
 //This struct is used to read/write the config file, including default parameters and project database information.
 type ConfigFile struct {
 	Conffile    string
 	Cfg         *ini.File
+}
+
+
+func InitGomonitor(){
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	CheckErr(err)
+	GMconfFile := filepath.Join(dir, "gomonitor.conf")
+	cfg, _ := ini.LoadSources(ini.LoadOptions{AllowBooleanKeys: true}, GMconfFile)
+
+	_ ,_ = cfg.NewSection("base")
+	_ ,_ = cfg.NewSection("kubectl")
+	_ ,_ = cfg.NewSection("volumeMounts")
+
+	CheckErr(err)
+	_, err = cfg.Section("base").NewKey("defaultFinishMark","Still_waters_run_deep")
+	CheckErr(err)
+	_, err = cfg.Section("kubectl").NewKey("RunAsGroup","511")
+		CheckErr(err)
+
+	_, err = cfg.Section("kubectl").NewKey("imagePullPolicy","Always")
+		CheckErr(err)
+
+	_, err = cfg.Section("kubectl").NewKey("imageRegistry","registry-vpc.cn-hangzhou.aliyuncs.com/annoroad/")
+	CheckErr(err)
+	_, err = cfg.Section("kubectl").NewKey("image","annogene-base:v0.1")
+	CheckErr(err)
+
+	_, err = cfg.Section("kubectl").NewKey("NodeSelector","env:idc_physical")
+	CheckErr(err)
+
+	_, err = cfg.Section("kubectl").NewKey("imagePullSecrets","registry-read-only-key-yw")
+		CheckErr(err)
+
+	_, err = cfg.Section("volumeMounts").NewKey("home","/cluster_home|store|/home")
+	CheckErr(err)
+	_, err = cfg.Section("volumeMounts").NewKey("cloud","/cloud|store|/annogene/cloud")
+	CheckErr(err)
+
+	err = cfg.SaveTo(GMconfFile)
+	CheckErr(err)
+
+	Taskutil.WriteWithIoutil(filepath.Join(dir, "submit.example"), PodConfig)
 }
 
 func (cff *ConfigFile)SetDefault(){
@@ -364,6 +439,7 @@ func CheckCount(rows *sql.Rows) (count int) {
 	return count
 }
 
+/*
 func Cff_Projects2DB(cff *ConfigFile, Db *sql.DB){
 	stmt, err := Db.Prepare("INSERT INTO projects(ProjectName, ProjectType, ProjectBatch, WorkFlowMode, DbPath, IsUpdateNow) values(?,?,?,?,?,?)")
 	CheckErr(err)
@@ -393,7 +469,7 @@ func Cff_Projects2DB(cff *ConfigFile, Db *sql.DB){
 	}
 	cff.Update()
 }
-
+*/
 
 
 func Creat_project_DB(cff *ConfigFile)(conn *sql.DB){
@@ -412,7 +488,7 @@ func Creat_project_DB(cff *ConfigFile)(conn *sql.DB){
 	Crt_gm_project_tb(conn)
 
 	//后期删除此项,所有project均在
-	Cff_Projects2DB(cff, conn)
+	//Cff_Projects2DB(cff, conn)
 
 	return
 }
