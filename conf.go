@@ -46,7 +46,8 @@ lines =
 [volumeMounts]
 home = /cluster_home|store|/home
 cloud = /cloud|store|/annogene/cloud
-datayw = /datayw|store|/annogene/datayw`
+datayw = /datayw|store|/annogene/datayw
+`
 
 //This struct is used to read/write the config file, including default parameters and project database information.
 type ConfigFile struct {
@@ -54,51 +55,71 @@ type ConfigFile struct {
 	Cfg         *ini.File
 }
 
-
 func InitGomonitor(){
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-	CheckErr(err)
+	Taskutil.CheckErr(err)
 	GMconfFile := filepath.Join(dir, "gomonitor.conf")
+	exit_file, err := Taskutil.PathExists(GMconfFile)
+	Taskutil.CheckErr(err)
+
+	if exit_file == false {
+		f, _ := os.OpenFile(GMconfFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0777)
+		defer f.Close()
+	}
+
 	cfg, _ := ini.LoadSources(ini.LoadOptions{AllowBooleanKeys: true}, GMconfFile)
 
 	_ ,_ = cfg.NewSection("base")
 	_ ,_ = cfg.NewSection("kubectl")
 	_ ,_ = cfg.NewSection("volumeMounts")
 
-	CheckErr(err)
+	Taskutil.CheckErr(err)
 	_, err = cfg.Section("base").NewKey("defaultFinishMark","Still_waters_run_deep")
-	CheckErr(err)
+	Taskutil.CheckErr(err)
 	_, err = cfg.Section("kubectl").NewKey("RunAsGroup","511")
-		CheckErr(err)
+	Taskutil.CheckErr(err)
 
-	_, err = cfg.Section("kubectl").NewKey("imagePullPolicy","Always")
-		CheckErr(err)
+	_, err = cfg.Section("kubectl").NewKey("imagePullPolicy","ifNotPresent")
+	Taskutil.CheckErr(err)
 
 	_, err = cfg.Section("kubectl").NewKey("imageRegistry","registry-vpc.cn-hangzhou.aliyuncs.com/annoroad/")
-	CheckErr(err)
+	Taskutil.CheckErr(err)
 	_, err = cfg.Section("kubectl").NewKey("image","annogene-base:v0.1")
-	CheckErr(err)
+	Taskutil.CheckErr(err)
 
 	_, err = cfg.Section("kubectl").NewKey("NodeSelector","env:idc_physical")
-	CheckErr(err)
+	Taskutil.CheckErr(err)
 
 	_, err = cfg.Section("kubectl").NewKey("imagePullSecrets","registry-read-only-key-yw")
-		CheckErr(err)
+	Taskutil.CheckErr(err)
 
 	_, err = cfg.Section("volumeMounts").NewKey("home","/cluster_home|store|/home")
-	CheckErr(err)
+	Taskutil.CheckErr(err)
 	_, err = cfg.Section("volumeMounts").NewKey("cloud","/cloud|store|/annogene/cloud")
-	CheckErr(err)
+	Taskutil.CheckErr(err)
 
 	err = cfg.SaveTo(GMconfFile)
-	CheckErr(err)
+	Taskutil.CheckErr(err)
 
-	Taskutil.WriteWithIoutil(filepath.Join(dir, "submit.example"), PodConfig)
+	Taskutil.WriteWithIoutil(filepath.Join(dir, "example.submit.ini"), PodConfig)
 }
 
 func (cff *ConfigFile)SetDefault(){
 	Hname, err := os.Hostname()
 	CheckErr(err)
+
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	Taskutil.CheckErr(err)
+	GMconfFile := filepath.Join(dir, "gomonitor.conf")
+	exit_file, err := Taskutil.PathExists(GMconfFile)
+	Taskutil.CheckErr(err)
+
+	if exit_file == false {
+		f, _ := os.OpenFile(GMconfFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0777)
+		defer f.Close()
+	}
+
+	default_cfg, _ := ini.LoadSources(ini.LoadOptions{AllowBooleanKeys: true}, GMconfFile)
 
 	_ ,_ = cff.Cfg.NewSection("project")
 	_ ,_ = cff.Cfg.NewSection("base")
@@ -107,14 +128,12 @@ func (cff *ConfigFile)SetDefault(){
 
 	_, err = cff.Cfg.Section("base").NewKey("CronNode",Hname)
 	CheckErr(err)
-	_, err = cff.Cfg.Section("base").NewKey("defaultFinishMark","Still_waters_run_deep")
-	CheckErr(err)
 	_, err = cff.Cfg.Section("base").NewKey("pobMaxRetries","3")
 	CheckErr(err)
 
 	RunAsGroup := cff.Cfg.Section("kubectl").Key("RunAsGroup").String()
 	if RunAsGroup == ""{
-		gid := "511"
+		gid := default_cfg.Section("kubectl").Key("RunAsGroup").String()
 		user, _ := user.Current()
 		if user.Name == "sci-qc"{
 			gid = "674"
@@ -123,35 +142,33 @@ func (cff *ConfigFile)SetDefault(){
 		CheckErr(err)
 	}
 
-	imagePullPolicy := cff.Cfg.Section("kubectl").Key("imagePullPolicy").String()
-	if imagePullPolicy == ""{
-		_, err = cff.Cfg.Section("kubectl").NewKey("imagePullPolicy","Always")
-		CheckErr(err)
+	SetDefaultConf(cff, default_cfg, "defaultFinishMark")
+	SetDefaultConf(cff, default_cfg, "imagePullPolicy")
+	SetDefaultConf(cff, default_cfg, "imageRegistry")
+	SetDefaultConf(cff, default_cfg, "image")
+	SetDefaultConf(cff, default_cfg, "NodeSelector")
+	SetDefaultConf(cff, default_cfg, "imagePullSecrets")
+	SetDefaultConf(cff, default_cfg, "NodeSelector")
+
+	volumeMounts, _ := default_cfg.GetSection("volumeMounts")
+	for _,key := range volumeMounts.Keys(){
+		value := cff.Cfg.Section("volumeMounts").Key(key.String()).String()
+		if value == ""{
+			_, err = cff.Cfg.Section("volumeMounts").NewKey(key.String(),key.Value())
+			CheckErr(err)
+		}
 	}
-
-	_, err = cff.Cfg.Section("kubectl").NewKey("imageRegistry","registry-vpc.cn-hangzhou.aliyuncs.com/annoroad/")
-	CheckErr(err)
-	_, err = cff.Cfg.Section("kubectl").NewKey("image","annogene-base:v0.1")
-	CheckErr(err)
-
-	NodeSelector := cff.Cfg.Section("kubectl").Key("imagePullPolicy").String()
-	if NodeSelector == ""{
-		_, err = cff.Cfg.Section("kubectl").NewKey("NodeSelector","env:idc_physical")
-		CheckErr(err)
-	}
-
-	imagePullSecrets := cff.Cfg.Section("kubectl").Key("imagePullSecrets").String()
-	if imagePullSecrets == ""{
-		_, err = cff.Cfg.Section("kubectl").NewKey("imagePullSecrets","registry-read-only-key-yw")
-		CheckErr(err)
-	}
-
-	_, err = cff.Cfg.Section("volumeMounts").NewKey("home","/cluster_home|store|/home")
-	CheckErr(err)
-	_, err = cff.Cfg.Section("volumeMounts").NewKey("cloud","/cloud|store|/annogene/cloud")
-	CheckErr(err)
 
 	cff.Update()
+}
+
+func SetDefaultConf(cff *ConfigFile, default_cfg *ini.File, key string){
+	value := cff.Cfg.Section("kubectl").Key(key).String()
+	if value == ""{
+		value = default_cfg.Section("kubectl").Key(key).String()
+		_, err := cff.Cfg.Section("kubectl").NewKey(key, value)
+		CheckErr(err)
+	}
 }
 
 
