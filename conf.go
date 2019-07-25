@@ -79,7 +79,7 @@ func InitGomonitor(){
 	_, err = cfg.Section("kubectl").NewKey("RunAsGroup","511")
 	Taskutil.CheckErr(err)
 
-	_, err = cfg.Section("kubectl").NewKey("imagePullPolicy","ifNotPresent")
+	_, err = cfg.Section("kubectl").NewKey("imagePullPolicy","IfNotPresent")
 	Taskutil.CheckErr(err)
 
 	_, err = cfg.Section("kubectl").NewKey("imageRegistry","registry-vpc.cn-hangzhou.aliyuncs.com/annoroad/")
