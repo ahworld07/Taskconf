@@ -142,13 +142,14 @@ func (cff *ConfigFile)SetDefault(){
 		CheckErr(err)
 	}
 
-	SetDefaultConf(cff, default_cfg, "defaultFinishMark")
-	SetDefaultConf(cff, default_cfg, "imagePullPolicy")
-	SetDefaultConf(cff, default_cfg, "imageRegistry")
-	SetDefaultConf(cff, default_cfg, "image")
-	SetDefaultConf(cff, default_cfg, "NodeSelector")
-	SetDefaultConf(cff, default_cfg, "imagePullSecrets")
-	SetDefaultConf(cff, default_cfg, "NodeSelector")
+
+	SetDefaultConf(cff, default_cfg, "base","defaultFinishMark")
+	SetDefaultConf(cff, default_cfg, "kubectl", "imagePullPolicy")
+	SetDefaultConf(cff, default_cfg, "kubectl", "imageRegistry")
+	SetDefaultConf(cff, default_cfg, "kubectl", "image")
+	SetDefaultConf(cff, default_cfg, "kubectl", "NodeSelector")
+	SetDefaultConf(cff, default_cfg, "kubectl", "imagePullSecrets")
+	SetDefaultConf(cff, default_cfg, "kubectl", "NodeSelector")
 
 	volumeMounts, _ := default_cfg.GetSection("volumeMounts")
 	for _,key := range volumeMounts.Keys(){
@@ -162,11 +163,11 @@ func (cff *ConfigFile)SetDefault(){
 	cff.Update()
 }
 
-func SetDefaultConf(cff *ConfigFile, default_cfg *ini.File, key string){
-	value := cff.Cfg.Section("kubectl").Key(key).String()
+func SetDefaultConf(cff *ConfigFile, default_cfg *ini.File,section, key string){
+	value := cff.Cfg.Section(section).Key(key).String()
 	if value == ""{
-		value = default_cfg.Section("kubectl").Key(key).String()
-		_, err := cff.Cfg.Section("kubectl").NewKey(key, value)
+		value = default_cfg.Section(section).Key(key).String()
+		_, err := cff.Cfg.Section(section).NewKey(key, value)
 		CheckErr(err)
 	}
 }
