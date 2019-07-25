@@ -104,6 +104,16 @@ func InitGomonitor(){
 	Taskutil.WriteWithIoutil(filepath.Join(dir, "example.submit.ini"), PodConfig)
 }
 
+func GetDefault()(defultCfg *ini.File){
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	Taskutil.CheckErr(err)
+	GMconfFile := filepath.Join(dir, "gomonitor.conf")
+
+	defultCfg, _ = ini.LoadSources(ini.LoadOptions{AllowBooleanKeys: true}, GMconfFile)
+
+	return
+}
+
 func (cff *ConfigFile)SetDefault(){
 	Hname, err := os.Hostname()
 	CheckErr(err)
